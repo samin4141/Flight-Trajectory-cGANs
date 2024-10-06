@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
-from funcs import delta_cyli_maker, delta_maker, draw_curved_line, draw_line, draw_spiral_line, rev_delta_cart_maker, rev_delta_cyli_maker
+from funcs import delta_cyli_maker, delta_maker, draw_curved_line, draw_line, draw_spiral_line, rev_delta_cart_maker, rev_delta_cyli_maker, plot_figures2
 from trial_generator_discriminator import Generator, Discriminator
 
 #Number of each to generate
@@ -125,27 +125,7 @@ if str(device) == "cuda":
 optimizer_G = torch.optim.Adam(generator.parameters(), lr=0.0001, betas=(0.5,0.999))
 optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=0.0001, betas=(0.5,0.999))
 
-def plot_figures(generated_data, noise_labels):
-    plt.figure(1)
-    plt.clf()
-    plt.figure(2)
-    plt.clf()
-    
-    for i, raw_data in enumerate(generated_data):
-        data = raw_data.detach().tolist()
-        x = data[0]
-        y = data[1]
-        fixed_track = rev_delta_cart_maker([[x, y]])
-        if noise_labels[i].item() == 0:
-            plt.figure(1)
-            plt.plot(fixed_track[0][0],fixed_track[0][1])
-        else:
-            plt.figure(2)
-            plt.plot(fixed_track[0][0],fixed_track[0][1])
-    plt.figure(1)
-    plt.show()
-    plt.figure(2)
-    plt.show()
+
 
 n_epochs = 2500
 
@@ -213,7 +193,7 @@ for epoch_idx in range(n_epochs):
             noise_labels = torch.randint(0, 2, (test_size,)).to(device)
             generated_data = generator(noise, noise_labels)
             
-            plot_figures(generated_data, noise_labels)
+            plot_figures2(generated_data, noise_labels)
 
     if (epoch_idx)%5 == 0:
         print('[%d/%d]: loss_d: %.3f, loss_g: %.3f' % (

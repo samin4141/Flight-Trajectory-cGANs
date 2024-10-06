@@ -1,5 +1,25 @@
 import random
 import math
+import torch
+import matplotlib as plt
+
+def delta_maker_torch(line):
+    new_line = []
+    line_dim = len(line[0])
+    line_length = len(line)
+    
+    line = line.tolist()
+    
+    for i in range(0, line_dim):
+        delta = []
+        for j in range(0, line_length):
+            if j == 0:
+                prev = line[j][i]
+                continue
+            delta.append(line[j][i]-prev)
+            prev = line[j][i]
+        new_line.append(delta)
+    return torch.Tensor(new_line)
 
 
 def delta_maker(lines):
@@ -61,6 +81,18 @@ def delta_cyli_maker(lines):
     return delta_lines
 
 
+def rev_delta_maker(line):
+    new_line = []
+    for line_dim in line:
+        delta = [0]
+        prev = 0
+        for i, item in enumerate(line_dim):
+            delta.append(float(item+prev))
+            prev = item+prev
+        new_line.append(delta)
+    return new_line
+
+
 def rev_delta_cyli_maker(lines):
     newlines = []
     for i, line in enumerate(lines):
@@ -108,3 +140,36 @@ def draw_line(r, theta, length):
   return [[0] + [i*r*math.cos(theta)/length+r*(random.random()-0.5)*0.01 for i in range(1, length)], \
           [0] + [i*r*math.sin(theta)/length+r*(random.random()-0.5)*0.01 for i in range(1, length)]]
 
+def plot_figures(generated_data, noise_labels):
+    fig = plt.plot()
+    ax = plt.axes(projection='3d')
+    colors = ['k', 'r', 'b']
+    for i, raw_data in enumerate(generated_data):
+        data = raw_data.detach().tolist()
+        fixed_track = rev_delta_maker(data)
+        if noise_labels[i] <= 2:
+            ax.plot3D(fixed_track[0],fixed_track[1],fixed_track[2], color = colors[noise_labels[i]])
+            
+    plt.show()
+    
+def plot_figures2(generated_data, noise_labels):
+    plt.figure(1)
+    plt.clf()
+    plt.figure(2)
+    plt.clf()
+    
+    for i, raw_data in enumerate(generated_data):
+        data = raw_data.detach().tolist()
+        x = data[0]
+        y = data[1]
+        fixed_track = rev_delta_cart_maker([[x, y]])
+        if noise_labels[i].item() == 0:
+            plt.figure(1)
+            plt.plot(fixed_track[0][0],fixed_track[0][1])
+        else:
+            plt.figure(2)
+            plt.plot(fixed_track[0][0],fixed_track[0][1])
+    plt.figure(1)
+    plt.show()
+    plt.figure(2)
+    plt.show()
